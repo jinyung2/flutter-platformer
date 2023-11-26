@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:platformer/components/background_tile.dart';
 import 'package:platformer/components/checkpoint.dart';
+import 'package:platformer/components/chicken.dart';
 import 'package:platformer/components/collision_block.dart';
 import 'package:platformer/components/fruit.dart';
 import 'package:platformer/components/player.dart';
@@ -34,14 +35,6 @@ class Level extends World with HasGameRef<PixelAdventure> {
     _addCollisions();
 
     return super.onLoad();
-  }
-
-  @override
-  void onMount() {
-    // resets player fruit count when the level is mounted, this prevents
-    // onChildrenChanged callbck from decrementing fruitCount
-    player.fruitCount = 0;
-    super.onMount();
   }
 
   @override
@@ -84,16 +77,15 @@ class Level extends World with HasGameRef<PixelAdventure> {
                 position: Vector2(spawnPoint.x, spawnPoint.y),
                 size: Vector2(spawnPoint.width, spawnPoint.height));
             add(fruit);
-            // player.fruitCount += 1;
+            player.fruitCount += 1;
             break;
-
           case 'Saw':
             final saw = Saw(
               position: Vector2(spawnPoint.x, spawnPoint.y),
               size: Vector2(spawnPoint.width, spawnPoint.height),
-              isVertical: !spawnPoint.properties.getValue("isHorizontal"),
-              offsetNegative: spawnPoint.properties.getValue("offsetNegative"),
-              offsetPositive: spawnPoint.properties.getValue("offsetPositive"),
+              isVertical: !spawnPoint.properties.getValue('isHorizontal'),
+              offsetNegative: spawnPoint.properties.getValue('offsetNegative'),
+              offsetPositive: spawnPoint.properties.getValue('offsetPositive'),
             );
             add(saw);
             break;
@@ -101,6 +93,15 @@ class Level extends World with HasGameRef<PixelAdventure> {
             checkpoint.position = Vector2(spawnPoint.x, spawnPoint.y);
             checkpoint.size = Vector2(spawnPoint.width, spawnPoint.height);
             add(checkpoint);
+          case 'Chicken':
+            final chicken = Chicken(
+              position: Vector2(spawnPoint.x, spawnPoint.y),
+              size: Vector2(spawnPoint.width, spawnPoint.height),
+              offsetNegative: spawnPoint.properties.getValue('offsetNegative'),
+              offsetPositive: spawnPoint.properties.getValue('offsetPositive'),
+            );
+            add(chicken);
+            break;
           default:
         }
       }
@@ -108,7 +109,7 @@ class Level extends World with HasGameRef<PixelAdventure> {
   }
 
   void _addCollisions() {
-    final collisionsLayer = level.tileMap.getLayer<ObjectGroup>("Collisions");
+    final collisionsLayer = level.tileMap.getLayer<ObjectGroup>('Collisions');
     if (collisionsLayer != null) {
       for (final collision in collisionsLayer.objects) {
         switch (collision.class_) {

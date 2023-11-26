@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/services.dart';
 import 'package:platformer/components/checkpoint.dart';
+import 'package:platformer/components/chicken.dart';
 import 'package:platformer/components/collision_block.dart';
 import 'package:platformer/components/fruit.dart';
 import 'package:platformer/components/hitbox.dart';
@@ -68,7 +69,7 @@ class Player extends SpriteAnimationGroupComponent
   late final SpriteAnimation disappearingAnimation;
 
   final double _gravity = 980;
-  final double _jumpForce = 310;
+  final double _jumpForce = 320;
   final double _terminalVelocity = 500;
   double horizontalMovement = 0;
   double moveSpeed = 100;
@@ -133,14 +134,13 @@ class Player extends SpriteAnimationGroupComponent
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (!_hasReachedCheckpoint) {
       if (other is Fruit) {
-        if (game.playSounds) {
-          FlameAudio.play('fruit.wav', volume: game.soundVolume);
-        }
         other.hasCollidedWithPlayer();
       } else if (other is Saw) {
         _respawn();
       } else if (other is Checkpoint && fruitCount == 0) {
         _reachedCheckpoint();
+      } else if (other is Chicken) {
+        other.hasCollidedWithPlayer();
       }
     }
 
@@ -286,7 +286,9 @@ class Player extends SpriteAnimationGroupComponent
   }
 
   void _respawn() {
-    if (game.playSounds) FlameAudio.play('hit.wav', volume: game.soundVolume);
+    if (game.playSounds && gotHit == false) {
+      FlameAudio.play('hit.wav', volume: game.soundVolume);
+    }
 
     gotHit = true;
     current = PlayerState.hit;
@@ -326,10 +328,17 @@ class Player extends SpriteAnimationGroupComponent
     final disappearingAnimation = animationTickers![PlayerState.disappearing];
     disappearingAnimation!.onComplete = () {
       position = Vector2.all(-640);
+      velocity = Vector2.all(0);
 
       Future.delayed(const Duration(seconds: 3), () {
+        _hasReachedCheckpoint = false;
+        gotHit = false;
         game.loadNextLevel();
       });
     };
+  }
+
+  void collidedWithEnemy() {
+    _respawn();
   }
 }

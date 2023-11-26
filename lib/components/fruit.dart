@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:platformer/components/hitbox.dart';
 import 'package:platformer/pixel_adventure.dart';
 
@@ -31,7 +32,7 @@ class Fruit extends SpriteAnimationComponent
     );
 
     animation = SpriteAnimation.fromFrameData(
-        game.images.fromCache("Items/Fruits/$name.png"),
+        game.images.fromCache('Items/Fruits/$name.png'),
         SpriteAnimationData.sequenced(
             amount: amount, stepTime: stepTime, textureSize: Vector2.all(32)));
     return super.onLoad();
@@ -39,8 +40,11 @@ class Fruit extends SpriteAnimationComponent
 
   void hasCollidedWithPlayer() {
     if (!_isCollected) {
+      if (game.playSounds) {
+        FlameAudio.play('fruit.wav', volume: game.soundVolume);
+      }
       animation = SpriteAnimation.fromFrameData(
-          game.images.fromCache("Items/Fruits/Collected.png"),
+          game.images.fromCache('Items/Fruits/Collected.png'),
           SpriteAnimationData.sequenced(
             amount: 6,
             stepTime: stepTime,
